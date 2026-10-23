@@ -1,3 +1,4 @@
+import { getAssistant } from './assistants.js';
 import { saveRecentSearch } from './providers.js';
 
 /**
@@ -17,8 +18,11 @@ export async function runItem(item, ctx, mode = 'new') {
     case 'search':
     case 'recent':
       return search(item.query, ctx, mode);
-    case 'chat':
-      return newChat(item.query, ctx);
+    case 'chat': {
+      const assistant = getAssistant(item.assistant);
+      if (!assistant.url) return newDiaChat(item.query, ctx);
+      return openUrl(item.query ? assistant.url(item.query) : assistant.home, ctx, mode);
+    }
   }
 }
 
@@ -49,7 +53,7 @@ async function search(query, ctx, mode) {
 
 // Dia's native new tab page is its chat entry point. There is no known URL to
 // prefill it, so the query goes to the clipboard for a quick paste.
-async function newChat(query, ctx) {
+async function newDiaChat(query, ctx) {
   if (query) {
     try {
       await navigator.clipboard.writeText(query);

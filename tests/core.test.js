@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
+import { getAssistant } from '../src/core/assistants.js';
 import { fuzzyScore } from '../src/core/fuzzy.js';
 import { buildResults } from '../src/core/ranker.js';
 import { normalizeUrl, toUrl } from '../src/core/url.js';
@@ -65,7 +66,7 @@ test('search takes slot 1 when nothing matches strongly', () => {
 
 test('URL input offers open-url and a plain search', () => {
   const rows = buildResults({ query: 'github.com', now });
-  assert.deepEqual(rows.map((r) => r.kind), ['url', 'search', 'chat']);
+  assert.deepEqual(rows.map((r) => r.kind), ['url', 'search', 'chat', 'chat', 'chat', 'chat']);
 });
 
 test('same page from several sources is shown once, preferring the open tab', () => {
@@ -89,5 +90,26 @@ test('recent search equal to the query is not duplicated', () => {
 test('results are capped', () => {
   const history = Array.from({ length: 50 }, (_, i) => ({ title: `Page ${i}`, url: `https://p${i}.com` }));
   const rows = buildResults({ query: 'page', history, now, max: 9 });
-  assert.equal(rows.length, 9);
+  assert.equal(rows.filter((r) => r.kind !== 'chat').length, 9);
+});
+
+test('a query ends with one ask row per assistant, Dia first', () => {
+  const rows = buildResults({ query: 'explain rust lifetimes', now });
+  const asks = rows.filter((r) => r.kind === 'chat');
+  assert.deepEqual(asks.map((r) => r.assistant), ['dia', 'claude', 'chatgpt', 'gemini']);
+  assert.equal(asks[1].title, 'Ask Claude: explain rust lifetimes');
+  assert.deepEqual(rows.slice(-4), asks);
+});
+
+test('empty query offers only the Dia new chat', () => {
+  const rows = buildResults({ now });
+  assert.deepEqual(rows.map((r) => r.assistant).filter(Boolean), ['dia']);
+});
+
+test('assistant links carry the encoded prompt', () => {
+  const q = 'a&b c?';
+  assert.equal(getAssistant('claude').url(q), 'https://claude.ai/new?q=a%26b%20c%3F');
+  assert.equal(getAssistant('chatgpt').url(q), 'https://chatgpt.com/?q=a%26b%20c%3F');
+  assert.equal(getAssistant('gemini').url(q), 'https://gemini.google.com/app?q=a%26b%20c%3F');
+  assert.equal(getAssistant('dia').url, undefined);
 });

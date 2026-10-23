@@ -1,3 +1,4 @@
+import { ASSISTANTS } from './assistants.js';
 import { fuzzyScore } from './fuzzy.js';
 import { displayUrl, normalizeUrl, toUrl } from './url.js';
 
@@ -52,8 +53,16 @@ export function recentItem(query) {
   return { id: `recent:${query}`, kind: 'recent', title: query, query };
 }
 
-export function chatItem(query) {
-  return { id: 'chat', kind: 'chat', title: query ? `Ask Dia: ${query}` : 'New chat', query };
+export function chatItem(query, assistant = ASSISTANTS[0]) {
+  return {
+    id: `chat:${assistant.id}`,
+    kind: 'chat',
+    assistant: assistant.id,
+    title: query ? `Ask ${assistant.name}: ${query}` : 'New chat',
+    subtitle: assistant.home ? displayUrl(assistant.home) : undefined,
+    iconUrl: assistant.home,
+    query,
+  };
 }
 
 export function openUrlItem(url) {
@@ -118,7 +127,8 @@ function dedupe(candidates) {
  *
  * Empty query: recent tabs, recent searches, then "New chat".
  * With a query: the best match (if strong) in slot 1, the search / open-URL row
- * fixed in slot 2, remaining matches, and "Ask Dia" last.
+ * fixed in slot 2, remaining matches, then one "Ask …" row per assistant.
+ * `max` caps the rows before the assistant rows.
  */
 export function buildResults({
   query = '',
@@ -134,7 +144,7 @@ export function buildResults({
   if (!text) {
     const recentTabs = [...tabs]
       .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0))
-      .slice(0, max - 4)
+      .slice(0, max - 3)
       .map(tabItem);
     const searches = recentSearches.slice(0, 3).map((r) => recentItem(r.query));
     return [...recentTabs, ...searches, chatItem('')];
@@ -154,7 +164,8 @@ export function buildResults({
   }
   if (url) rows.push(searchItem(text));
 
-  const room = max - rows.length - 1;
-  rows.push(...matches.slice(0, Math.max(0, room)).map((c) => c.item), chatItem(text));
+  const room = max - rows.length;
+  rows.push(...matches.slice(0, Math.max(0, room)).map((c) => c.item));
+  rows.push(...ASSISTANTS.map((assistant) => chatItem(text, assistant)));
   return rows;
 }

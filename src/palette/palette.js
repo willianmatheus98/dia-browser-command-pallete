@@ -45,8 +45,9 @@ let historyTimer;
 let requestId = 0;
 
 function iconFor(item) {
-  if (item.url && item.kind !== 'url') {
-    const src = chrome.runtime.getURL(`/_favicon/?pageUrl=${encodeURIComponent(item.url)}&size=32`);
+  const pageUrl = item.iconUrl ?? (item.kind !== 'url' && item.url);
+  if (pageUrl) {
+    const src = chrome.runtime.getURL(`/_favicon/?pageUrl=${encodeURIComponent(pageUrl)}&size=32`);
     return `<img src="${src}" alt="" />`;
   }
   const name = item.kind === 'url' ? 'globe' : item.kind;
