@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Dia Command Palette",
   "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApQQUtf85Qnr1ZLwJCXKOZnVKYUI9WGSJmWluvwTYipqHRsZ5z8yY3Iv6YL6VClRBFpbbPYYjxgljsR6erYIWCV5HV0zN/DvkJGeNUhQcToIUlomgTMK627lPMPN4oXEddB5kwbKSeuByk202qf4lUg+qsfpD237VESUzuK6vNoPayqihj1xRZkuN3clGfPDw7AIESGr5Xeae8Zb7safZY2nAhbTL7FoqQoCQjFYA0EZ8bWUqJxvrJITzOtGZ7bWwyRUXKu5g6XhO/4AwInkRyLYAjgPENVG1KhR7UpiyGLIIxP6W04EiJVCHy5fK+62Oz8nJZbEk7JtOCpu0E9o+EQIDAQAB",
   "description": "Arc-style command palette: switch tabs, search history, bookmarks and the web, or ask Claude, ChatGPT or Gemini.",
   "permissions": ["tabs", "history", "bookmarks", "storage", "search", "favicon", "scripting"],
   "host_permissions": ["<all_urls>"],
