@@ -8,6 +8,7 @@ palette opens over the current page:
 - **Search the web**: always fixed in the second row (first row when nothing matches well),
   or **Open URL** when you type an address
 - **Ask Dia / New chat**: opens Dia's native new tab, with your query copied to the clipboard
+- **Ask Claude / ChatGPT / Gemini**: opens a new chat with your query already filled in
 
 ## Install (unpacked)
 
@@ -44,8 +45,10 @@ manifest.json
 src/
   background.js        command handler: toggles the overlay, or a popup window fallback
   content/overlay.js   mounts the palette in a full-viewport iframe on the page
+  content/gemini-prefill.js  types the prompt into Gemini (it has no ?q= support)
   palette/             the palette page (UI + keyboard handling)
   core/
+    assistants.js      Dia / Claude / ChatGPT / Gemini and their prefill links
     ranker.js          ordering rules, fuzzy matching, de-duplication (pure, unit tested)
     providers.js       tabs, bookmarks, history, recent searches
     actions.js         switch / open / search / new chat
@@ -67,7 +70,9 @@ up the new content script the next time the shortcut is pressed.
 
 ## Known limitations
 
-- Dia has no known URL to start a chat with a prefilled prompt, so "Ask Dia" copies the query to
-  the clipboard and opens Dia's new tab for you to paste it.
+- Dia has no URL to start a chat with a prefilled prompt (`dia://new-tab-page/` rejects query
+  strings), so "Ask Dia" copies the query to the clipboard and opens Dia's new tab for you to paste.
+- The Claude and ChatGPT `?q=` links and the Gemini prefill script rely on undocumented
+  behavior and may break when those sites change.
 - Sites that put elements in the browser's top layer (fullscreen video, open `<dialog>`s) can
   cover the overlay.
