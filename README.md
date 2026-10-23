@@ -7,7 +7,7 @@ palette opens over the current page:
 - **Recent searches**, **bookmarks** and **history**
 - **Search the web**: always fixed in the second row (first row when nothing matches well),
   or **Open URL** when you type an address
-- **Ask Dia / New chat**: opens Dia's native new tab, with your query copied to the clipboard
+- **Ask Dia**: opens Dia's side chat (⌘E) and sends your query, via the optional native helper
 - **Ask Claude / ChatGPT / Gemini**: opens a new chat with your query already filled in
 
 ## Install (unpacked)
@@ -15,7 +15,22 @@ palette opens over the current page:
 1. Open `chrome://extensions` in Dia and turn on **Developer mode**.
 2. Click **Load unpacked** and select this folder (the one with `manifest.json`).
 
-No build step: the extension runs straight from source.
+No build step: the extension runs straight from source. The extension ID is pinned to
+`dhaljlfbeljgnkhgnhjdigkepfpblbme` by the `key` in `manifest.json`.
+
+### Optional: Ask Dia helper
+
+Extensions can't press browser shortcuts, so "Ask Dia" uses a small native messaging helper
+(`native/`) that tells macOS to press ⌘E in Dia, paste the query and press Return.
+
+```sh
+bash native/install.sh             # registers the helper with Dia (needs python3)
+bash native/install.sh --uninstall
+```
+
+Restart Dia after installing. On first use macOS asks to let Dia control your computer: allow it
+under **System Settings → Privacy & Security → Accessibility**. Without the helper, Ask Dia just
+copies the query: press ⌘E and ⌘V yourself.
 
 ## Shortcuts
 
@@ -43,7 +58,8 @@ Keyboard Shortcuts… → App Shortcuts → All Applications → Show Help menu*
 ```
 manifest.json
 src/
-  background.js        command handler: toggles the overlay, or a popup window fallback
+  background.js        command handler: toggles the overlay, or a popup window fallback;
+                       relays Ask Dia to the native helper
   content/overlay.js   mounts the palette in a full-viewport iframe on the page
   content/gemini-prefill.js  types the prompt into Gemini (it has no ?q= support)
   palette/             the palette page (UI + keyboard handling)
@@ -51,7 +67,10 @@ src/
     assistants.js      Dia / Claude / ChatGPT / Gemini and their prefill links
     ranker.js          ordering rules, fuzzy matching, de-duplication (pure, unit tested)
     providers.js       tabs, bookmarks, history, recent searches
-    actions.js         switch / open / search / new chat
+    actions.js         switch / open / search / ask
+native/
+  dia_palette_helper.py  native messaging host: ⌘E, paste, Return in Dia
+  install.sh             registers it in Dia's NativeMessagingHosts
 ```
 
 Pages that block extension scripts (`chrome://`, `dia://`, the Web Store, the PDF viewer) can't
@@ -70,8 +89,9 @@ up the new content script the next time the shortcut is pressed.
 
 ## Known limitations
 
-- Dia has no URL to start a chat with a prefilled prompt (`dia://new-tab-page/` rejects query
-  strings), so "Ask Dia" copies the query to the clipboard and opens Dia's new tab for you to paste.
+- Dia has no URL to open its chat with a prompt, hence the keystroke helper. ⌘E toggles the side
+  chat, so if it's already open, Ask Dia closes it instead. Ask Dia also replaces your clipboard
+  with the query.
 - The Claude and ChatGPT `?q=` links and the Gemini prefill script rely on undocumented
   behavior and may break when those sites change.
 - Sites that put elements in the browser's top layer (fullscreen video, open `<dialog>`s) can
