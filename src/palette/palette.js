@@ -177,6 +177,11 @@ if (mode === 'window') window.addEventListener('blur', close);
 async function init() {
   input.focus();
   render(buildResults({ query: '' }));
+  // Opened straight from the ⌘? key handler, the overlay URL carries no tab info.
+  if (!ctx.tabId) {
+    const tab = await chrome.tabs.getCurrent();
+    Object.assign(ctx, { tabId: tab?.id, windowId: tab?.windowId });
+  }
   const [tabs, bookmarks, recentSearches] = await Promise.all([
     getTabs({ excludeTabId: mode === 'overlay' ? ctx.tabId : undefined }),
     getBookmarks(),

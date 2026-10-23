@@ -54,14 +54,17 @@
   });
 
   // ⌘? can't be a chrome.commands shortcut ("/" isn't an allowed key), so the page catches it.
-  // Capture phase so sites with their own ⌘? handlers don't see it first.
+  // Capture phase so sites with their own ⌘? handlers don't see it first. The overlay is built
+  // right here, inside the key event, so the page still has user activation when focus moves
+  // into the iframe; the palette looks up its own tab.
   window.addEventListener(
     'keydown',
     (event) => {
       if (!isPaletteShortcut(event)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      chrome.runtime.sendMessage({ type: 'dia-palette:open' });
+      if (frame) close();
+      else open(chrome.runtime.getURL('src/palette/palette.html?mode=overlay'));
     },
     true,
   );
