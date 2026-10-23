@@ -1,9 +1,8 @@
 const encode = encodeURIComponent;
 
 // Chat assistants offered as "Ask …" rows. `url` builds a link that opens a new
-// chat with the prompt filled in; Dia has none, so it is handled in actions.js.
+// chat with the prompt filled in. Dia's own chat has no such link, so it isn't listed.
 export const ASSISTANTS = [
-  { id: 'dia', name: 'Dia' },
   { id: 'claude', name: 'Claude', home: 'https://claude.ai/new', url: (q) => `https://claude.ai/new?q=${encode(q)}` },
   { id: 'chatgpt', name: 'ChatGPT', home: 'https://chatgpt.com/', url: (q) => `https://chatgpt.com/?q=${encode(q)}` },
   // Gemini ignores ?q= itself; src/content/gemini-prefill.js types it into the prompt box.

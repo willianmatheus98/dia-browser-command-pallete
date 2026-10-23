@@ -18,11 +18,8 @@ export async function runItem(item, ctx, mode = 'new') {
     case 'search':
     case 'recent':
       return search(item.query, ctx, mode);
-    case 'chat': {
-      const assistant = getAssistant(item.assistant);
-      if (!assistant.url) return newDiaChat(item.query, ctx);
-      return openUrl(item.query ? assistant.url(item.query) : assistant.home, ctx, mode);
-    }
+    case 'chat':
+      return openUrl(getAssistant(item.assistant).url(item.query), ctx, mode);
   }
 }
 
@@ -48,20 +45,6 @@ async function search(query, ctx, mode) {
   } else {
     await chrome.tabs.update(tabId, { url: `https://www.google.com/search?q=${encodeURIComponent(query)}` });
   }
-  await focusWindow(ctx);
-}
-
-// Dia's native new tab page is its chat entry point. There is no known URL to
-// prefill it, so the query goes to the clipboard for a quick paste.
-async function newDiaChat(query, ctx) {
-  if (query) {
-    try {
-      await navigator.clipboard.writeText(query);
-    } catch {
-      // Clipboard can fail without focus; opening the chat still helps.
-    }
-  }
-  await chrome.tabs.create({ windowId: ctx.windowId, active: true });
   await focusWindow(ctx);
 }
 

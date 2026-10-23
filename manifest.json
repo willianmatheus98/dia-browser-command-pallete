@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Dia Command Palette",
   "version": "0.1.0",
-  "description": "Arc-style command palette: switch tabs, search history, bookmarks and the web, or start a new chat.",
-  "permissions": ["tabs", "history", "bookmarks", "storage", "search", "favicon", "scripting", "clipboardWrite"],
+  "description": "Arc-style command palette: switch tabs, search history, bookmarks and the web, or ask Claude, ChatGPT or Gemini.",
+  "permissions": ["tabs", "history", "bookmarks", "storage", "search", "favicon", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "src/background.js",

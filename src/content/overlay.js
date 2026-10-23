@@ -48,7 +48,6 @@
     refocusCount = 0;
     frame = document.createElement('iframe');
     frame.src = src;
-    frame.allow = 'clipboard-write';
     frame.setAttribute('aria-label', 'Command palette');
     Object.assign(frame.style, {
       position: 'fixed',
