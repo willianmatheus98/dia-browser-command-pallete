@@ -1,4 +1,4 @@
-import { ASSISTANTS } from './assistants.js';
+import { ASSISTANTS, getAssistant } from './assistants.js';
 import { fuzzyScore } from './fuzzy.js';
 import { displayUrl, normalizeUrl, toUrl } from './url.js';
 
@@ -58,8 +58,8 @@ export function chatItem(query, assistant) {
     id: `chat:${assistant.id}`,
     kind: 'chat',
     assistant: assistant.id,
-    title: `Ask ${assistant.name}: ${query}`,
-    subtitle: displayUrl(assistant.home),
+    title: query ? `Ask ${assistant.name}: ${query}` : `Open ${assistant.name} chat`,
+    subtitle: assistant.home ? displayUrl(assistant.home) : assistant.subtitle,
     iconUrl: assistant.home,
     query,
   };
@@ -125,7 +125,7 @@ function dedupe(candidates) {
 /**
  * Builds the ordered palette rows.
  *
- * Empty query: recent tabs, then recent searches.
+ * Empty query: recent tabs, recent searches, then the Dia side chat.
  * With a query: the best match (if strong) in slot 1, the search / open-URL row
  * fixed in slot 2, remaining matches, then one "Ask …" row per assistant.
  * `max` caps the rows before the assistant rows.
@@ -147,7 +147,7 @@ export function buildResults({
       .slice(0, max - 3)
       .map(tabItem);
     const searches = recentSearches.slice(0, 3).map((r) => recentItem(r.query));
-    return [...recentTabs, ...searches];
+    return [...recentTabs, ...searches, chatItem('', getAssistant('dia'))];
   }
 
   const url = toUrl(text);

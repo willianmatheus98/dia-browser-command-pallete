@@ -19,8 +19,23 @@ export async function runItem(item, ctx, mode = 'new') {
     case 'recent':
       return search(item.query, ctx, mode);
     case 'chat':
+      if (item.assistant === 'dia') return askDia(item.query);
       return openUrl(getAssistant(item.assistant).url(item.query), ctx, mode);
   }
+}
+
+// The background script hands this to the native helper, which presses ⌘E in Dia
+// and pastes the query. Copying here first doubles as the fallback when the helper
+// isn't installed: ⌘E, ⌘V by hand.
+async function askDia(query) {
+  if (query) {
+    try {
+      await navigator.clipboard.writeText(query);
+    } catch {
+      // The helper sets the clipboard itself, so this is only the fallback path.
+    }
+  }
+  chrome.runtime.sendMessage({ type: 'dia-palette:ask-dia', query });
 }
 
 async function openUrl(url, ctx, mode) {

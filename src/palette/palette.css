@@ -166,6 +166,10 @@ body {
   stroke-linejoin: round;
 }
 
+.row[data-kind='chat'] .icon {
+  color: var(--accent);
+}
+
 .text {
   flex: 1;
   min-width: 0;

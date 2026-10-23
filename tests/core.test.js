@@ -30,7 +30,7 @@ test('fuzzyScore ranks prefix > word start > substring > subsequence', () => {
   assert.equal(fuzzyScore('xyz', 'YouTube'), 0);
 });
 
-test('empty query lists recent tabs, then recent searches', () => {
+test('empty query lists recent tabs, recent searches and the Dia chat', () => {
   const rows = buildResults({
     tabs: [
       { id: 1, windowId: 1, title: 'Old', url: 'https://old.com', lastAccessed: now - 1000 },
@@ -39,7 +39,7 @@ test('empty query lists recent tabs, then recent searches', () => {
     recentSearches: [{ query: 'weather', at: now }],
     now,
   });
-  assert.deepEqual(rows.map((r) => r.kind), ['tab', 'tab', 'recent']);
+  assert.deepEqual(rows.map((r) => r.kind), ['tab', 'tab', 'recent', 'chat']);
   assert.equal(rows[0].title, 'New');
 });
 
@@ -66,7 +66,7 @@ test('search takes slot 1 when nothing matches strongly', () => {
 
 test('URL input offers open-url and a plain search', () => {
   const rows = buildResults({ query: 'github.com', now });
-  assert.deepEqual(rows.map((r) => r.kind), ['url', 'search', 'chat', 'chat', 'chat']);
+  assert.deepEqual(rows.map((r) => r.kind), ['url', 'search', 'chat', 'chat', 'chat', 'chat']);
 });
 
 test('same page from several sources is shown once, preferring the open tab', () => {
@@ -93,17 +93,18 @@ test('results are capped', () => {
   assert.equal(rows.filter((r) => r.kind !== 'chat').length, 9);
 });
 
-test('a query ends with one ask row per assistant', () => {
+test('a query ends with one ask row per assistant, Dia first', () => {
   const rows = buildResults({ query: 'explain rust lifetimes', now });
   const asks = rows.filter((r) => r.kind === 'chat');
-  assert.deepEqual(asks.map((r) => r.assistant), ['claude', 'chatgpt', 'gemini']);
-  assert.equal(asks[0].title, 'Ask Claude: explain rust lifetimes');
-  assert.deepEqual(rows.slice(-3), asks);
+  assert.deepEqual(asks.map((r) => r.assistant), ['dia', 'claude', 'chatgpt', 'gemini']);
+  assert.equal(asks[1].title, 'Ask Claude: explain rust lifetimes');
+  assert.deepEqual(rows.slice(-4), asks);
 });
 
-test('empty query has no ask rows', () => {
+test('empty query offers only the Dia side chat', () => {
   const rows = buildResults({ now });
-  assert.equal(rows.filter((r) => r.kind === 'chat').length, 0);
+  const asks = rows.filter((r) => r.kind === 'chat');
+  assert.deepEqual(asks.map((r) => [r.assistant, r.title]), [['dia', 'Open Dia chat']]);
 });
 
 test('assistant links carry the encoded prompt', () => {

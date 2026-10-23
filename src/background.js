@@ -3,6 +3,9 @@ const CONTENT_SCRIPT = 'src/content/overlay.js';
 const WINDOW_KEY = 'paletteWindowId';
 const WINDOW_WIDTH = 720;
 const WINDOW_HEIGHT = 480;
+const NATIVE_HOST = 'com.diapalette.helper';
+// Lets the palette close first, so the helper's keystrokes reach Dia and not the palette.
+const ASK_DIA_DELAY_MS = 150;
 
 function paletteUrl(mode, tab) {
   const params = new URLSearchParams({ mode, tabId: tab.id, windowId: tab.windowId });
@@ -72,3 +75,16 @@ chrome.commands.onCommand.addListener((command, tab) => {
 });
 
 chrome.action.onClicked.addListener((tab) => openPalette(tab));
+
+// "Ask Dia": the native helper (native/) presses ⌘E in Dia and pastes the query.
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== 'dia-palette:ask-dia') return;
+  setTimeout(async () => {
+    try {
+      const result = await chrome.runtime.sendNativeMessage(NATIVE_HOST, { action: 'ask-dia', query: message.query ?? '' });
+      if (!result?.ok) console.warn('[dia-palette] helper could not open the side chat', result?.error);
+    } catch (error) {
+      console.warn('[dia-palette] native helper not installed; the query is on the clipboard', error);
+    }
+  }, ASK_DIA_DELAY_MS);
+});
