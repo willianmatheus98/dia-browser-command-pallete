@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Command Palette</title>
+    <link rel="stylesheet" href="palette.css" />
+    <script type="module" src="palette.js"></script>
+  </head>
+  <body>
+    <div id="backdrop"></div>
+    <div id="card" role="dialog" aria-label="Command palette">
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        <input
+          id="query"
+          type="text"
+          placeholder="Search or Enter URL…"
+          autocomplete="off"
+          spellcheck="false"
+          autofocus
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="results"
+        />
+      </div>
+      <ul id="results" role="listbox"></ul>
+      <footer class="hints">
+        <span><kbd>↵</kbd> open</span>
+        <span><kbd>⇧↵</kbd> in this tab</span>
+        <span><kbd>⌘↵</kbd> in background</span>
+        <span><kbd>esc</kbd> close</span>
+      </footer>
+    </div>
+  </body>
+</html>
