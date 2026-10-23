@@ -1,7 +1,7 @@
 # Dia Command Palette
 
-An Arc-style command palette for the [Dia](https://www.diabrowser.com/) browser. Press ⌘T and a
-palette opens over the current page instead of a new tab:
+An Arc-style command palette for the [Dia](https://www.diabrowser.com/) browser. Press ⌘? and a
+palette opens over the current page:
 
 - **Open tabs**: pick one and it switches to that tab, no new tab is created
 - **Recent searches**, **bookmarks** and **history**
@@ -16,17 +16,16 @@ palette opens over the current page instead of a new tab:
 
 No build step: the extension runs straight from source.
 
-## Bind it to ⌘T
+## Shortcuts
 
-Dia owns ⌘T, so move its own "New Tab" shortcut first:
+- **⌘?** (⌘⇧/) opens the palette on any regular web page; press it again to close.
+  Extension shortcuts can't use `/`, so this one is caught by the content script and only works on
+  pages that allow extension scripts.
+- **⌥T** (rebindable in `chrome://extensions/shortcuts`) and the **toolbar icon** work everywhere,
+  including `dia://` pages, where the palette opens as a small popup window.
 
-1. macOS **System Settings → Keyboard → Keyboard Shortcuts… → App Shortcuts → +**
-2. Application: **Dia**, Menu title: `New Tab` (must match Dia's File menu exactly),
-   shortcut: e.g. ⌥⌘T. Restart Dia.
-3. Open `chrome://extensions/shortcuts`, find **Dia Command Palette → Open the command palette**
-   and set it to ⌘T.
-
-Until then the default shortcut is ⌥T, and clicking the toolbar icon also opens the palette.
+If ⌘? opens macOS's Help menu search instead, disable it under **System Settings → Keyboard →
+Keyboard Shortcuts… → App Shortcuts → All Applications → Show Help menu**.
 
 ## Keys
 
