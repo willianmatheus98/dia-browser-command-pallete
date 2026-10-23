@@ -1,8 +1,9 @@
 // Mounts the palette page in a full-viewport iframe over the current site.
 // The iframe keeps the UI isolated from page CSS and gives it full extension API access.
 (() => {
-  if (window.__diaPaletteLoaded) return;
-  window.__diaPaletteLoaded = true;
+  // A copy orphaned by an extension reload loses chrome.runtime, so a fresh one may take over.
+  if (window.__diaPalette?.alive()) return;
+  window.__diaPalette = { alive: () => Boolean(chrome.runtime?.id) };
 
   let frame = null;
   let previousFocus = null;
