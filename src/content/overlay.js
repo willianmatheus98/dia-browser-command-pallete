@@ -8,6 +8,11 @@
   let frame = null;
   let previousFocus = null;
 
+  // Keep in sync with isPaletteShortcut in src/palette/palette.js.
+  function isPaletteShortcut(event) {
+    return event.metaKey && event.shiftKey && (event.code === 'Slash' || event.key === '?');
+  }
+
   function open(src) {
     previousFocus = document.activeElement;
     frame = document.createElement('iframe');
@@ -47,6 +52,19 @@
     else open(message.src);
     sendResponse({ ok: true });
   });
+
+  // ⌘? can't be a chrome.commands shortcut ("/" isn't an allowed key), so the page catches it.
+  // Capture phase so sites with their own ⌘? handlers don't see it first.
+  window.addEventListener(
+    'keydown',
+    (event) => {
+      if (!isPaletteShortcut(event)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      chrome.runtime.sendMessage({ type: 'dia-palette:open' });
+    },
+    true,
+  );
 
   window.addEventListener('message', (event) => {
     if (frame && event.source === frame.contentWindow && event.data?.type === 'dia-palette:close') close();

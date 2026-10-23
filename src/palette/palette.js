@@ -144,8 +144,14 @@ input.addEventListener('keydown', (event) => {
   }
 });
 
+// Keep in sync with isPaletteShortcut in src/content/overlay.js.
+function isPaletteShortcut(event) {
+  return event.metaKey && event.shiftKey && (event.code === 'Slash' || event.key === '?');
+}
+
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
+  // Pressing the shortcut again while the palette has focus closes it.
+  if (event.key === 'Escape' || isPaletteShortcut(event)) {
     event.preventDefault();
     close();
   }

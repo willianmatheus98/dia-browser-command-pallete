@@ -72,3 +72,8 @@ chrome.commands.onCommand.addListener((command, tab) => {
 });
 
 chrome.action.onClicked.addListener((tab) => openPalette(tab));
+
+// ⌘? pressed on a page (see src/content/overlay.js).
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (message?.type === 'dia-palette:open' && sender.tab) openPalette(sender.tab);
+});
