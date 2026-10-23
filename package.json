@@ -1,0 +1,10 @@
+{
+  "name": "dia-command-palette",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Arc-style Cmd+T command palette for the Dia browser",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}
