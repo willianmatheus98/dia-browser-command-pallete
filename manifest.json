@@ -14,6 +14,11 @@
       "matches": ["<all_urls>"],
       "js": ["src/content/overlay.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://gemini.google.com/app*"],
+      "js": ["src/content/gemini-prefill.js"],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
