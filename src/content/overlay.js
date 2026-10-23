@@ -10,6 +10,7 @@
   const MAX_REFOCUS = 5;
 
   let frame = null;
+  let frameLoaded = false;
   let previousFocus = null;
   let refocusCount = 0;
 
@@ -18,11 +19,13 @@
     return event.metaKey && event.shiftKey && (event.code === 'Slash' || event.key === '?');
   }
 
-  // Moves focus into the iframe, then asks the palette to focus its input.
+  // Moves focus into the iframe, then asks the palette to focus its input. Until the palette
+  // loads, the iframe still holds an about:blank document with the page's origin, so the
+  // message waits for load.
   function focusFrame() {
     if (!frame) return;
     frame.focus({ preventScroll: true });
-    frame.contentWindow?.postMessage({ type: 'dia-palette:focus' }, PALETTE_ORIGIN);
+    if (frameLoaded) frame.contentWindow?.postMessage({ type: 'dia-palette:focus' }, PALETTE_ORIGIN);
   }
 
   function onFocusIn(event) {
@@ -46,6 +49,7 @@
   function open(src) {
     previousFocus = document.activeElement;
     refocusCount = 0;
+    frameLoaded = false;
     frame = document.createElement('iframe');
     frame.src = src;
     frame.allow = 'clipboard-write';
@@ -64,7 +68,10 @@
       colorScheme: 'normal',
       zIndex: '2147483647',
     });
-    frame.addEventListener('load', focusFrame);
+    frame.addEventListener('load', () => {
+      frameLoaded = true;
+      focusFrame();
+    });
     for (const [type, listener] of FOCUS_GUARDS) window.addEventListener(type, listener, true);
     // Appended to <html> rather than <body> so a transformed body can't break position: fixed.
     document.documentElement.appendChild(frame);
