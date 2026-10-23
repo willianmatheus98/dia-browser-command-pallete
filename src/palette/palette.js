@@ -170,12 +170,27 @@ list.addEventListener('click', (event) => {
 
 document.getElementById('backdrop').addEventListener('click', close);
 
-window.addEventListener('focus', () => input.focus());
+function focusInput() {
+  input.focus({ preventScroll: true });
+}
+
+// Focus can land late (iframe still loading, page or browser UI holding it), so the
+// overlay script hands it over explicitly and the palette retries for a few frames.
+function claimFocus(attempts = 20) {
+  if (document.hasFocus() && document.activeElement === input) return;
+  focusInput();
+  if (attempts > 1) requestAnimationFrame(() => claimFocus(attempts - 1));
+}
+
+window.addEventListener('focus', focusInput);
+window.addEventListener('message', (event) => {
+  if (event.source === window.parent && event.data?.type === 'dia-palette:focus') claimFocus();
+});
 // The fallback window behaves like a transient popover: clicking away dismisses it.
 if (mode === 'window') window.addEventListener('blur', close);
 
 async function init() {
-  input.focus();
+  claimFocus();
   render(buildResults({ query: '' }));
   // Opened straight from the ⌘? key handler, the overlay URL carries no tab info.
   if (!ctx.tabId) {

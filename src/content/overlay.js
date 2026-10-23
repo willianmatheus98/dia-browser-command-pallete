@@ -5,16 +5,47 @@
   if (window.__diaPalette?.alive()) return;
   window.__diaPalette = { alive: () => Boolean(chrome.runtime?.id) };
 
+  const PALETTE_ORIGIN = new URL(chrome.runtime.getURL('')).origin;
+  // Enough to win against sites that refocus their editor on blur, without fighting forever.
+  const MAX_REFOCUS = 5;
+
   let frame = null;
   let previousFocus = null;
+  let refocusCount = 0;
 
   // Keep in sync with isPaletteShortcut in src/palette/palette.js.
   function isPaletteShortcut(event) {
     return event.metaKey && event.shiftKey && (event.code === 'Slash' || event.key === '?');
   }
 
+  // Moves focus into the iframe, then asks the palette to focus its input.
+  function focusFrame() {
+    if (!frame) return;
+    frame.focus({ preventScroll: true });
+    frame.contentWindow?.postMessage({ type: 'dia-palette:focus' }, PALETTE_ORIGIN);
+  }
+
+  function onFocusIn(event) {
+    if (!frame || event.target === frame || refocusCount >= MAX_REFOCUS) return;
+    refocusCount++;
+    focusFrame();
+  }
+
+  // Editors often refocus themselves on blur. Hiding blur from the page while the palette
+  // is open means they never notice focus left. Capture on window runs before element listeners.
+  function hideBlur(event) {
+    if (frame) event.stopImmediatePropagation();
+  }
+
+  const FOCUS_GUARDS = [
+    ['focusin', onFocusIn],
+    ['blur', hideBlur],
+    ['focusout', hideBlur],
+  ];
+
   function open(src) {
     previousFocus = document.activeElement;
+    refocusCount = 0;
     frame = document.createElement('iframe');
     frame.src = src;
     frame.allow = 'clipboard-write';
@@ -33,13 +64,16 @@
       colorScheme: 'normal',
       zIndex: '2147483647',
     });
-    frame.addEventListener('load', () => frame?.focus());
+    frame.addEventListener('load', focusFrame);
+    for (const [type, listener] of FOCUS_GUARDS) window.addEventListener(type, listener, true);
     // Appended to <html> rather than <body> so a transformed body can't break position: fixed.
     document.documentElement.appendChild(frame);
+    focusFrame();
   }
 
   function close() {
     if (!frame) return;
+    for (const [type, listener] of FOCUS_GUARDS) window.removeEventListener(type, listener, true);
     frame.remove();
     frame = null;
     previousFocus?.focus?.({ preventScroll: true });
